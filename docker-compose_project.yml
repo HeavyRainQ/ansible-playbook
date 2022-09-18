@@ -1,0 +1,71 @@
+- hosts: all
+  become: yes
+  gather_facts: false
+
+  tasks:
+
+  - name: Install docker packages
+    remote_user: myubuntu
+    apt:
+      name: ['apt-transport-https','ca-certificates', 'curl', 'software-properties-common']
+      state: present
+      update_cache: yes
+    tags:
+      - docker
+
+  - name: Add Docker s GPG key for ubuntu from official site
+    remote_user: myubuntu
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+    tags:
+      - docker
+
+  - name: Verify gpg key with the fingerprint
+    remote_user: myubuntu
+    apt_key:
+      id: 0EBFCD88
+      state: present
+    tags:
+      - docker
+
+  - name: Configure Docker for ubuntu stable repository
+    remote_user: myubuntu
+    apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+      state: present
+      update_cache: yes
+    tags:
+      - docker
+
+  - name: Update apt packages
+    remote_user: myubuntu
+    apt:
+      update_cache: yes
+    tags:
+      - docker
+
+  - name: Install docker-ce
+    remote_user: myubuntu
+    apt:
+      name: docker-ce
+      state: present
+      update_cache: yes
+    tags:
+      - docker
+
+  - name: Add "myubuntu" user to "docker" group
+    remote_user: myubuntu
+    user:
+      name: "myubuntu"
+      group: "docker"
+      append: yes
+    tags:
+      - docker
+
+  - name: Install docker-compose from official github repo
+    remote_user: myubuntu
+    get_url:
+      url : https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64
+      dest: /usr/local/bin/docker-compose
+      mode: 'u+x,g+x'
